@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(rustc --version)",
+      "Bash(cargo --version)",
+      "Bash(xcode-select -p)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"=== tsc exit: $? ===\")",
+      "Bash(npm run *)",
+      "Bash(cargo add *)",
+      "Bash(npm uninstall *)",
+      "Bash(cargo build *)",
+      "Bash(rm -f ../quill.zip)",
+      "Bash(zip -r -q ../quill.zip . -x \"node_modules/*\" \"src-tauri/target/*\" \"dist/*\" \"*.DS_Store\" \".git/*\")",
+      "Read(//Users/liumingzhi/Desktop/**)",
+      "Bash(unzip -l ../quill.zip)"
+    ]
+  }
+}
