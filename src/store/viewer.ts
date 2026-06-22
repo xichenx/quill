@@ -12,7 +12,6 @@ import { type OpenedFile } from "../lib/files";
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 5;
 const SCALE_STEP = 0.1;
-const FINE_STEP = 0.05;
 const DEFAULT_SCALE = 1.25;
 const RECENTS_KEY = "quill.recents";
 const THEME_KEY = "quill.theme";
