@@ -42,6 +42,16 @@
 | State        | [Zustand](https://zustand.docs.pmnd.rs/)            |
 | Icons        | [Lucide React](https://lucide.dev/)                 |
 
+## Download
+
+Go to the [Releases](https://github.com/xichen/Quill/releases) page to download the latest installer for your platform.
+
+| Platform | Package       |
+| -------- | ------------- |
+| Windows  | `.msi` / `.exe` |
+| macOS    | `.dmg`         |
+| Linux    | `.deb` / `.AppImage` |
+
 ## Getting Started
 
 ### Prerequisites

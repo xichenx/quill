@@ -42,6 +42,16 @@
 | 状态管理       | [Zustand](https://zustand.docs.pmnd.rs/)              |
 | 图标库         | [Lucide React](https://lucide.dev/)                   |
 
+## 下载安装
+
+前往 [Releases](https://github.com/xichen/Quill/releases) 页面下载最新版本安装包。
+
+| 平台     | 安装包格式          |
+| -------- | ------------------- |
+| Windows  | `.msi` / `.exe`     |
+| macOS    | `.dmg`              |
+| Linux    | `.deb` / `.AppImage` |
+
 ## 快速开始
 
 ### 环境要求
