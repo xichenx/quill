@@ -32,7 +32,7 @@ function App() {
       const f = await openPdfDialog();
       if (f) await openFile(f);
     } catch (e) {
-      console.error(e);
+      console.error("打开 PDF 失败:", e);
     }
   }, [openFile]);
 
@@ -112,7 +112,7 @@ function App() {
 
   return (
     <div
-      className="flex h-full flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
+      className="flex h-full flex-col bg-surface text-zinc-800 dark:bg-surface-dark dark:text-zinc-200"
       onDragOver={(e) => {
         e.preventDefault();
         setDragging(true);

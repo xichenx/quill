@@ -29,7 +29,6 @@ function PageView({
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  const [visible, setVisible] = useState(false);
   const [boxes, setBoxes] = useState<MatchBox[][]>([]);
 
   // Base size to reserve scroll space before the page renders.
@@ -51,27 +50,21 @@ function PageView({
     const el = wrapRef.current;
     if (!el) return;
     registerRef(pageNumber, el);
-    const io = new IntersectionObserver(
-      (entries) => setVisible(entries[0]?.isIntersecting ?? false),
-      { rootMargin: "600px 0px" },
-    );
-    io.observe(el);
     return () => {
-      io.disconnect();
       registerRef(pageNumber, null);
     };
   }, [pageNumber]);
 
   useEffect(() => {
-    if (visible && canvasRef.current) {
+    if (canvasRef.current) {
       renderPage(doc, pageNumber, canvasRef.current, scale, rotation).catch(
-        console.error,
+        (e) => console.error(`渲染页面 ${pageNumber} 失败:`, e),
       );
     }
-  }, [visible, doc, pageNumber, scale, rotation]);
+  }, [doc, pageNumber, scale, rotation]);
 
   useEffect(() => {
-    if (!visible || !query.trim()) {
+    if (!query.trim()) {
       setBoxes([]);
       return;
     }
@@ -82,13 +75,13 @@ function PageView({
     return () => {
       cancelled = true;
     };
-  }, [visible, doc, pageNumber, query, caseSensitive, scale, rotation]);
+  }, [doc, pageNumber, query, caseSensitive, scale, rotation]);
 
   return (
     <div className="flex flex-col items-center">
       <div
         ref={wrapRef}
-        className="relative overflow-hidden rounded-md bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05),0_12px_32px_-12px_rgba(0,0,0,0.18)] ring-1 ring-zinc-900/[0.06] dark:ring-white/10"
+        className="animate-scale-in relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.12)] ring-1 ring-zinc-900/[0.05] transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06),0_24px_48px_-16px_rgba(0,0,0,0.16)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2),0_16px_40px_-16px_rgba(0,0,0,0.4)] dark:ring-white/[0.06] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3),0_24px_48px_-16px_rgba(0,0,0,0.5)]"
         style={size ? { width: size.w, height: size.h } : { minHeight: 200 }}
       >
         <canvas ref={canvasRef} className="block" />
@@ -97,10 +90,10 @@ function PageView({
             <div
               key={`${oi}-${bi}`}
               className={
-                "pointer-events-none absolute rounded-[1px] " +
+                "pointer-events-none absolute rounded-[2px] " +
                 (oi === activeOrdinal
-                  ? "bg-orange-400/50 ring-1 ring-orange-500"
-                  : "bg-yellow-300/40")
+                  ? "bg-accent-400/50 ring-1 ring-accent-500"
+                  : "bg-amber-300/40 ring-1 ring-amber-400/30")
               }
               style={{
                 left: b.left,
@@ -112,7 +105,7 @@ function PageView({
           )),
         )}
       </div>
-      <span className="py-1.5 text-xs tabular-nums text-zinc-400">
+      <span className="py-2 text-xs font-semibold tabular-nums text-zinc-400 dark:text-zinc-500">
         {pageNumber}
       </span>
     </div>

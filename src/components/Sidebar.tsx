@@ -42,14 +42,14 @@ function Thumbnail({
     <button
       ref={ref}
       onClick={onClick}
-      className="group flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
+      className="group flex w-full flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 transition-all duration-150 hover:bg-surface-hover dark:hover:bg-surface-dark-hover"
     >
       <div
         className={
-          "overflow-hidden rounded-md ring-1 transition-shadow " +
+          "overflow-hidden rounded-lg transition-all duration-200 " +
           (active
-            ? "shadow-md ring-2 ring-violet-500"
-            : "ring-zinc-200 group-hover:ring-zinc-300 dark:ring-zinc-700")
+            ? "shadow-lg ring-2 ring-accent-500 scale-[1.02]"
+            : "shadow-sm ring-1 ring-zinc-200/60 group-hover:ring-zinc-300/60 dark:ring-zinc-700/50 dark:group-hover:ring-zinc-600/50")
         }
         style={{ width: THUMB_WIDTH }}
       >
@@ -61,10 +61,10 @@ function Thumbnail({
       </div>
       <span
         className={
-          "text-xs tabular-nums " +
+          "text-xs font-semibold tabular-nums transition-colors " +
           (active
-            ? "font-medium text-violet-600 dark:text-violet-400"
-            : "text-zinc-500")
+            ? "text-accent-600 dark:text-accent-400"
+            : "text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300")
         }
       >
         {page}
@@ -85,23 +85,23 @@ function OutlineTree({
   currentPage: number;
 }) {
   return (
-    <ul>
+    <ul className="space-y-0.5">
       {nodes.map((n, i) => (
         <li key={i}>
           <button
             onClick={() => n.page && onGo(n.page)}
             disabled={!n.page}
-            style={{ paddingLeft: 8 + depth * 14 }}
+            style={{ paddingLeft: 8 + depth * 16 }}
             className={
-              "flex w-full items-center justify-between gap-2 rounded-md py-1.5 pr-2 text-left text-sm transition-colors hover:bg-zinc-200/60 disabled:opacity-50 dark:hover:bg-zinc-800 " +
+              "flex w-full items-center justify-between gap-2 rounded-lg py-2 pr-2 text-left text-sm font-medium transition-colors duration-150 disabled:opacity-40 " +
               (n.page === currentPage
-                ? "text-violet-600 dark:text-violet-400"
-                : "text-zinc-700 dark:text-zinc-300")
+                ? "bg-accent-100/60 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300"
+                : "text-zinc-600 hover:bg-surface-hover hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-surface-dark-hover dark:hover:text-zinc-200")
             }
           >
             <span className="truncate">{n.title || "(无标题)"}</span>
             {n.page && (
-              <span className="shrink-0 text-xs tabular-nums text-zinc-400">
+              <span className="shrink-0 text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
                 {n.page}
               </span>
             )}
@@ -136,13 +136,16 @@ function TabButton({
       title={title}
       onClick={onClick}
       className={
-        "flex h-9 flex-1 items-center justify-center transition-colors " +
+        "relative flex h-10 flex-1 items-center justify-center transition-colors duration-150 " +
         (active
-          ? "border-b-2 border-violet-500 text-violet-600 dark:text-violet-400"
-          : "border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200")
+          ? "text-accent-600 dark:text-accent-400"
+          : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300")
       }
     >
       {children}
+      {active && (
+        <span className="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-accent-500" />
+      )}
     </button>
   );
 }
@@ -155,14 +158,15 @@ export default function Sidebar() {
   if (!sidebarOpen) return null;
 
   const tabs: { id: SidebarTab; icon: React.ReactNode; label: string }[] = [
-    { id: "thumbnails", icon: <Images size={17} />, label: "缩略图" },
-    { id: "outline", icon: <List size={17} />, label: "目录" },
-    { id: "bookmarks", icon: <BookmarkIcon size={17} />, label: "书签" },
+    { id: "thumbnails", icon: <Images size={16} />, label: "缩略图" },
+    { id: "outline", icon: <List size={16} />, label: "目录" },
+    { id: "bookmarks", icon: <BookmarkIcon size={16} />, label: "书签" },
   ];
 
   return (
-    <aside className="flex w-48 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+    <aside className="animate-slide-in-left flex w-48 shrink-0 flex-col border-r border-zinc-200/60 bg-white dark:border-zinc-700/30 dark:bg-zinc-900">
+      {/* Tab header */}
+      <div className="flex border-b border-zinc-200/60 dark:border-zinc-700/30">
         {tabs.map((t) => (
           <TabButton
             key={t.id}
@@ -175,11 +179,15 @@ export default function Sidebar() {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-1">
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto px-1 py-2">
         {!active && (
-          <p className="px-3 py-6 text-center text-xs text-zinc-400">
-            未打开文件
-          </p>
+          <div className="flex flex-col items-center gap-2 px-3 py-12">
+            <div className="rounded-xl bg-surface-alt p-3 dark:bg-surface-dark-alt">
+              <Images size={24} className="text-zinc-300 dark:text-zinc-600" />
+            </div>
+            <p className="text-xs font-medium text-zinc-400">打开 PDF 以开始</p>
+          </div>
         )}
 
         {active && sidebarTab === "thumbnails" && (
@@ -206,28 +214,31 @@ export default function Sidebar() {
                 currentPage={active.pageNum}
               />
             ) : (
-              <p className="px-3 py-6 text-center text-xs text-zinc-400">
-                此文档没有目录
-              </p>
+              <div className="flex flex-col items-center gap-2 px-3 py-12">
+                <div className="rounded-xl bg-surface-alt p-3 dark:bg-surface-dark-alt">
+                  <List size={24} className="text-zinc-300 dark:text-zinc-600" />
+                </div>
+                <p className="text-xs font-medium text-zinc-400">此文档没有目录</p>
+              </div>
             )}
           </div>
         )}
 
         {active && sidebarTab === "bookmarks" && (
-          <div className="py-1">
+          <div className="space-y-0.5 py-1">
             {active.bookmarks.length ? (
               active.bookmarks.map((b) => (
                 <div
                   key={b.page}
-                  className="group flex items-center gap-1 rounded-md pr-1 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
+                  className="group flex items-center gap-1 rounded-lg pr-1 transition-colors hover:bg-surface-hover dark:hover:bg-surface-dark-hover"
                 >
                   <button
                     onClick={() => goToPage(b.page)}
                     className={
-                      "flex flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm " +
+                      "flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left text-sm font-medium transition-colors " +
                       (b.page === active.pageNum
-                        ? "text-violet-600 dark:text-violet-400"
-                        : "text-zinc-700 dark:text-zinc-300")
+                        ? "text-accent-600 dark:text-accent-400"
+                        : "text-zinc-600 dark:text-zinc-300")
                     }
                   >
                     <BookmarkIcon size={14} className="shrink-0" />
@@ -236,18 +247,23 @@ export default function Sidebar() {
                   <button
                     title="删除书签"
                     onClick={() => removeBookmark(b.page)}
-                    className="flex h-6 w-6 items-center justify-center rounded text-zinc-400 opacity-0 transition hover:bg-zinc-300/60 group-hover:opacity-100 dark:hover:bg-zinc-700"
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-zinc-200 group-hover:opacity-100 dark:hover:bg-zinc-700"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 </div>
               ))
             ) : (
-              <p className="px-3 py-6 text-center text-xs text-zinc-400">
-                还没有书签
-                <br />
-                在工具栏点书签按钮添加当前页
-              </p>
+              <div className="flex flex-col items-center gap-2 px-3 py-12">
+                <div className="rounded-xl bg-surface-alt p-3 dark:bg-surface-dark-alt">
+                  <BookmarkIcon size={24} className="text-zinc-300 dark:text-zinc-600" />
+                </div>
+                <p className="text-center text-xs font-medium leading-relaxed text-zinc-400">
+                  还没有书签
+                  <br />
+                  <span className="text-zinc-300 dark:text-zinc-600">Ctrl+B 添加当前页</span>
+                </p>
+              </div>
             )}
           </div>
         )}

@@ -97,7 +97,7 @@ export default function Viewer() {
     <div
       ref={containerRef}
       onScroll={onScroll}
-      className="flex flex-1 flex-col items-center gap-5 overflow-auto bg-zinc-100 p-8 dark:bg-zinc-900"
+      className="flex flex-1 flex-col items-center gap-6 overflow-auto bg-surface-alt px-8 py-10 dark:bg-surface-dark-alt"
     >
       {Array.from({ length: active.numPages }, (_, i) => i + 1).map((p) => (
         <PageView
