@@ -18,14 +18,54 @@ jobs:
 
       - name: Determine version
         id: version
-        run: echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          # Strip leading 'v' if present
+          VERSION="${TAG#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Tag: $TAG → Version: $VERSION"
+
+  # ── Sync tag version back to source files ───────────────────────────
+  sync-version:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write version from tag
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+
+          # package.json
+          cat package.json | jq ".version = \"$VERSION\"" > package.json.tmp && mv package.json.tmp package.json
+
+          # tauri.conf.json
+          cat src-tauri/tauri.conf.json | jq ".version = \"$VERSION\"" > src-tauri/tauri.conf.json.tmp && mv src-tauri/tauri.conf.json.tmp src-tauri/tauri.conf.json
+
+          # Cargo.toml
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
+
+          echo "Version synced: $VERSION"
+          echo "  ✓ package.json"
+          echo "  ✓ src-tauri/tauri.conf.json"
+          echo "  ✓ src-tauri/Cargo.toml"
+
+      - name: Commit & push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
+          git commit -m "chore: bump version to ${{ needs.get-version.outputs.version }}" || echo "No changes to commit"
+          git push origin HEAD:main
 
   # ── Windows ─────────────────────────────────────────────────────────
   build-windows:
-    needs: get-version
+    needs: sync-version
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,10 +101,12 @@ jobs:
 
   # ── macOS ───────────────────────────────────────────────────────────
   build-macos:
-    needs: get-version
+    needs: sync-version
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -90,10 +132,12 @@ jobs:
 
   # ── Linux ───────────────────────────────────────────────────────────
   build-linux:
-    needs: get-version
+    needs: sync-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -79,6 +79,23 @@ npm run tauri build
 
 构建产物位于 `src-tauri/target/release/` 目录。
 
+## 发版流程
+
+版本号由 Git tag 管理。在 GitHub 上发布 Release 时，CI 工作流会自动将 tag 版本号回写到 `package.json`、`src-tauri/tauri.conf.json` 和 `src-tauri/Cargo.toml`，然后构建打包。
+
+```bash
+# 1. 推送代码
+git push
+
+# 2. 在 GitHub 上进入 Releases → Draft a new Release
+#    创建标签（如 v0.1.0）并点击 Publish
+#    CI 工作流将自动：
+#      - 将 tag 版本号写入所有配置文件
+#      - 提交版本号变更并推回 main 分支
+#      - 构建 Windows / macOS / Linux 安装包
+#      - 上传安装包到 Release
+```
+
 ## 快捷键
 
 | 快捷键             | 操作             |

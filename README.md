@@ -79,6 +79,23 @@ npm run tauri build
 
 The built binary will be in `src-tauri/target/release/`.
 
+## Release
+
+Version is managed by Git tags. When you publish a Release on GitHub, the CI workflow automatically writes the tag version back to `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` before building.
+
+```bash
+# 1. Push your code
+git push
+
+# 2. Go to GitHub → Releases → Draft a new Release
+#    Create a tag (e.g. v0.1.0) and click Publish
+#    The CI workflow will:
+#      - Write the tag version to all config files
+#      - Commit and push the version bump back to main
+#      - Build Windows / macOS / Linux installers
+#      - Attach them to the Release
+```
+
 ## Keyboard Shortcuts
 
 | Shortcut          | Action              |
