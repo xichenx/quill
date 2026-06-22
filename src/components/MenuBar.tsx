@@ -219,9 +219,7 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
   return (
     <div ref={barRef} data-tauri-drag-region className="flex h-8 shrink-0 items-center border-b border-zinc-200/60 bg-white/90 pl-2 pr-0 backdrop-blur-xl dark:border-zinc-700/30 dark:bg-zinc-900/90 overflow-visible">
       {/* Logo */}
-      <span className="mr-2 shrink-0 text-[13px] font-semibold tracking-tight text-zinc-400 dark:text-zinc-500 select-none">
-        Quill
-      </span>
+      <img src="/logo.png" alt="Quill" className="mr-2 shrink-0 h-5 w-5 select-none" />
 
       {/* Menus */}
       <div className="flex shrink-0 items-center select-none">
