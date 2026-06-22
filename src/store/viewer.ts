@@ -11,10 +11,12 @@ import { type OpenedFile } from "../lib/files";
 
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 5;
-const SCALE_STEP = 0.2;
+const SCALE_STEP = 0.1;
+const FINE_STEP = 0.05;
 const DEFAULT_SCALE = 1.25;
 const RECENTS_KEY = "quill.recents";
 const THEME_KEY = "quill.theme";
+const BOOKMARKS_KEY = "quill.bookmarks";
 const MAX_RECENTS = 12;
 
 export type FitMode = "custom" | "width" | "page";
@@ -81,6 +83,8 @@ interface State {
 
   zoomIn: () => void;
   zoomOut: () => void;
+  zoomBy: (delta: number) => void;
+  resetZoom: () => void;
   setScale: (s: number) => void;
   setFitScale: (s: number) => void;
   setFitMode: (m: FitMode) => void;
@@ -120,6 +124,35 @@ function saveRecents(recents: RecentFile[]) {
 
 function loadTheme(): Theme {
   return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+}
+
+// Bookmark persistence: keyed by file path.
+interface StoredBookmarks {
+  [path: string]: Bookmark[];
+}
+
+function loadBookmarks(): StoredBookmarks {
+  try {
+    return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveBookmarks(bookmarks: StoredBookmarks) {
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+}
+
+function loadDocBookmarks(path: string | null): Bookmark[] {
+  if (!path) return [];
+  return loadBookmarks()[path] ?? [];
+}
+
+function persistDocBookmarks(path: string | null, bookmarks: Bookmark[]) {
+  if (!path) return;
+  const all = loadBookmarks();
+  all[path] = bookmarks;
+  saveBookmarks(all);
 }
 
 let idSeq = 0;
@@ -167,10 +200,10 @@ export const useViewer = create<State>((set, get) => {
         numPages: doc.numPages,
         pageNum: 1,
         scale: DEFAULT_SCALE,
-        fitMode: "width",
+        fitMode: "custom",
         rotation: 0,
         outline: [],
-        bookmarks: [],
+        bookmarks: loadDocBookmarks(file.path),
       };
       set((s) => {
         let recents = s.recents;
@@ -244,6 +277,14 @@ export const useViewer = create<State>((set, get) => {
       const a = active();
       if (a) patchActive({ scale: clampScale(a.scale - SCALE_STEP), fitMode: "custom" });
     },
+    zoomBy: (delta: number) => {
+      const a = active();
+      if (a) patchActive({ scale: clampScale(a.scale + delta), fitMode: "custom" });
+    },
+    resetZoom: () => {
+      const a = active();
+      if (a) patchActive({ scale: DEFAULT_SCALE, fitMode: "custom" });
+    },
     setScale: (s) => patchActive({ scale: clampScale(s), fitMode: "custom" }),
     setFitScale: (s) => patchActive({ scale: clampScale(s) }),
     setFitMode: (m) => patchActive({ fitMode: m }),
@@ -258,17 +299,20 @@ export const useViewer = create<State>((set, get) => {
       const a = active();
       if (!a) return;
       const exists = a.bookmarks.some((b) => b.page === a.pageNum);
-      patchActive({
-        bookmarks: exists
-          ? a.bookmarks.filter((b) => b.page !== a.pageNum)
-          : [...a.bookmarks, { page: a.pageNum, label: `第 ${a.pageNum} 页` }].sort(
-              (x, y) => x.page - y.page,
-            ),
-      });
+      const bookmarks = exists
+        ? a.bookmarks.filter((b) => b.page !== a.pageNum)
+        : [...a.bookmarks, { page: a.pageNum, label: `第 ${a.pageNum} 页` }].sort(
+            (x, y) => x.page - y.page,
+          );
+      patchActive({ bookmarks });
+      persistDocBookmarks(a.path, bookmarks);
     },
     removeBookmark: (page) => {
       const a = active();
-      if (a) patchActive({ bookmarks: a.bookmarks.filter((b) => b.page !== page) });
+      if (!a) return;
+      const bookmarks = a.bookmarks.filter((b) => b.page !== page);
+      patchActive({ bookmarks });
+      persistDocBookmarks(a.path, bookmarks);
     },
 
     openSearch: () => set({ searchOpen: true }),

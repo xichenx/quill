@@ -36,7 +36,7 @@ export default function SearchPanel() {
   if (!searchOpen) return null;
 
   return (
-    <div className="animate-slide-in-right flex w-72 shrink-0 flex-col border-l border-zinc-200/60 bg-white dark:border-zinc-700/30 dark:bg-zinc-900">
+    <div className="search-panel animate-slide-in-right flex w-72 shrink-0 flex-col border-l border-zinc-200/60 bg-white dark:border-zinc-700/30 dark:bg-zinc-900">
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-zinc-200/60 px-4 py-3 dark:border-zinc-700/30">
         <Search size={15} className="text-zinc-400" />

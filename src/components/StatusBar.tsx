@@ -6,7 +6,7 @@ export default function StatusBar() {
   const { docs } = useViewer();
 
   return (
-    <footer className="flex h-8 shrink-0 items-center gap-3 border-t border-zinc-200/60 bg-white/90 px-4 text-xs backdrop-blur-xl dark:border-zinc-700/30 dark:bg-zinc-900/90">
+    <footer className="status-bar flex h-8 shrink-0 items-center gap-3 border-t border-zinc-200/60 bg-white/90 px-4 text-xs backdrop-blur-xl dark:border-zinc-700/30 dark:bg-zinc-900/90">
       {active ? (
         <>
           <div className="flex items-center gap-2">

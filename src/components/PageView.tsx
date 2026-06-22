@@ -6,6 +6,7 @@ import {
   type PdfDocument,
   type MatchBox,
 } from "../lib/pdf";
+import TextLayer from "./TextLayer";
 
 function PageView({
   doc,
@@ -81,10 +82,20 @@ function PageView({
     <div className="flex flex-col items-center">
       <div
         ref={wrapRef}
-        className="animate-scale-in relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.12)] ring-1 ring-zinc-900/[0.05] transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06),0_24px_48px_-16px_rgba(0,0,0,0.16)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2),0_16px_40px_-16px_rgba(0,0,0,0.4)] dark:ring-white/[0.06] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3),0_24px_48px_-16px_rgba(0,0,0,0.5)]"
+        className="page-wrapper animate-scale-in relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.12)] ring-1 ring-zinc-900/[0.05] transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06),0_24px_48px_-16px_rgba(0,0,0,0.16)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2),0_16px_40px_-16px_rgba(0,0,0,0.4)] dark:ring-white/[0.06] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3),0_24px_48px_-16px_rgba(0,0,0,0.5)]"
         style={size ? { width: size.w, height: size.h } : { minHeight: 200 }}
       >
         <canvas ref={canvasRef} className="block" />
+        {size && (
+          <TextLayer
+            doc={doc}
+            pageNumber={pageNumber}
+            scale={scale}
+            rotation={rotation}
+            width={size.w}
+            height={size.h}
+          />
+        )}
         {boxes.map((occ, oi) =>
           occ.map((b, bi) => (
             <div

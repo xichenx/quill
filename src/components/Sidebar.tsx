@@ -164,7 +164,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="animate-slide-in-left flex w-48 shrink-0 flex-col border-r border-zinc-200/60 bg-white dark:border-zinc-700/30 dark:bg-zinc-900">
+    <aside className="sidebar-area animate-slide-in-left flex w-48 shrink-0 flex-col border-r border-zinc-200/60 bg-white dark:border-zinc-700/30 dark:bg-zinc-900">
       {/* Tab header */}
       <div className="flex border-b border-zinc-200/60 dark:border-zinc-700/30">
         {tabs.map((t) => (

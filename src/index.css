@@ -129,3 +129,41 @@ h3 {
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
 }
+
+/* ---- Tauri drag region ---- */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+}
+[data-tauri-drag-region] button,
+[data-tauri-drag-region] input,
+[data-tauri-drag-region] a {
+  -webkit-app-region: no-drag;
+}
+
+/* ---- Print ---- */
+@media print {
+  header, nav, .sidebar-area, .tab-bar, .status-bar, .search-panel,
+  button, input[type="text"], input[type="search"], .no-print {
+    display: none !important;
+  }
+
+  html, body, #root {
+    height: auto;
+    overflow: visible;
+  }
+
+  .viewer-area {
+    overflow: visible !important;
+  }
+
+  .page-wrapper {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 16px;
+  }
+
+  body {
+    background: white !important;
+  }
+}

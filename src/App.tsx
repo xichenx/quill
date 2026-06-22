@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useViewer } from "./store/viewer";
 import { openPdfDialog, readPdfPath, fileToOpened } from "./lib/files";
-import Toolbar from "./components/Toolbar";
+import { toast } from "./components/Toast";
+import { ToastContainer } from "./components/Toast";
+import MenuBar from "./components/MenuBar";
 import TabBar from "./components/TabBar";
 import Sidebar from "./components/Sidebar";
 import Viewer from "./components/Viewer";
@@ -32,7 +34,7 @@ function App() {
       const f = await openPdfDialog();
       if (f) await openFile(f);
     } catch (e) {
-      console.error("打开 PDF 失败:", e);
+      toast(`打开 PDF 失败: ${e}`, "error");
     }
   }, [openFile]);
 
@@ -41,7 +43,7 @@ function App() {
       try {
         await openFile(await readPdfPath(path));
       } catch (e) {
-        console.error(e);
+        toast(`无法打开最近文件: ${e}`, "error");
         removeRecent(path);
       }
     },
@@ -74,8 +76,22 @@ function App() {
         openSearch();
         return;
       }
+      if (mod && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        window.print();
+        return;
+      }
       if (e.key === "Escape") {
         closeSearch();
+        return;
+      }
+      if (e.key === "F11") {
+        e.preventDefault();
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen();
+        }
         return;
       }
       const target = e.target as HTMLElement;
@@ -127,22 +143,31 @@ function App() {
         if (f) openDroppedFile(f);
       }}
     >
-      <Toolbar onOpen={openViaDialog} />
-      <TabBar onOpen={openViaDialog} />
-      <div className="flex min-h-0 flex-1">
-        {hasDocs && <Sidebar />}
-        {hasDocs ? (
-          <Viewer />
-        ) : (
+      {/* Menu bar row */}
+      <MenuBar onOpen={openViaDialog} onOpenRecent={openRecent} />
+      {hasDocs ? (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1">
+            <Sidebar />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <TabBar onOpen={openViaDialog} />
+              <Viewer />
+            </div>
+            <SearchPanel />
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1">
           <Home
             dragging={dragging}
             onOpen={openViaDialog}
             onOpenRecent={openRecent}
           />
-        )}
-        {hasDocs && <SearchPanel />}
-      </div>
+        </div>
+      )}
+
       <StatusBar />
+      <ToastContainer />
     </div>
   );
 }
