@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Continuous scroll mode — pages flow seamlessly without gaps
+- Remember reading position — page, zoom, rotation, and scroll mode are restored on reopen
+- Scroll mode toggle button in toolbar and View menu
+- Text selection and copy — select text on PDF pages and copy with Ctrl+C
+
 ## [0.1.0] - unreleased
 
 ### Added

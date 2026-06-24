@@ -56,8 +56,13 @@ h3 {
 
 /* ---- Selection ---- */
 ::selection {
-  background: color-mix(in srgb, var(--color-accent-500) 25%, transparent);
-  color: inherit;
+  background: color-mix(in srgb, var(--color-accent-500) 30%, transparent);
+  color: transparent;
+}
+
+/* For the text layer, ensure selection highlight is visible despite transparent text */
+.text-layer ::selection {
+  background: rgba(59, 108, 244, 0.3);
 }
 
 /* ---- Scrollbars ---- */

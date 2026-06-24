@@ -16,9 +16,11 @@ const DEFAULT_SCALE = 1.25;
 const RECENTS_KEY = "quill.recents";
 const THEME_KEY = "quill.theme";
 const BOOKMARKS_KEY = "quill.bookmarks";
+const POSITIONS_KEY = "quill.positions";
 const MAX_RECENTS = 12;
 
 export type FitMode = "custom" | "width" | "page";
+export type ScrollMode = "paged" | "continuous";
 export type SidebarTab = "thumbnails" | "outline" | "bookmarks";
 export type Theme = "light" | "dark";
 
@@ -42,6 +44,7 @@ export interface DocState {
   pageNum: number;
   scale: number;
   fitMode: FitMode;
+  scrollMode: ScrollMode;
   rotation: number;
   outline: OutlineNode[];
   bookmarks: Bookmark[];
@@ -87,6 +90,7 @@ interface State {
   setScale: (s: number) => void;
   setFitScale: (s: number) => void;
   setFitMode: (m: FitMode) => void;
+  setScrollMode: (m: ScrollMode) => void;
   rotateCW: () => void;
 
   toggleSidebar: () => void;
@@ -128,6 +132,38 @@ function loadTheme(): Theme {
 // Bookmark persistence: keyed by file path.
 interface StoredBookmarks {
   [path: string]: Bookmark[];
+}
+
+interface StoredPosition {
+  pageNum: number;
+  scale: number;
+  fitMode: FitMode;
+  scrollMode: ScrollMode;
+  rotation: number;
+}
+
+interface StoredPositions {
+  [path: string]: StoredPosition;
+}
+
+function loadPositions(): StoredPositions {
+  try {
+    return JSON.parse(localStorage.getItem(POSITIONS_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function savePosition(path: string | null, pos: StoredPosition) {
+  if (!path) return;
+  const all = loadPositions();
+  all[path] = pos;
+  localStorage.setItem(POSITIONS_KEY, JSON.stringify(all));
+}
+
+function loadDocPosition(path: string | null): StoredPosition | null {
+  if (!path) return null;
+  return loadPositions()[path] ?? null;
 }
 
 function loadBookmarks(): StoredBookmarks {
@@ -191,16 +227,18 @@ export const useViewer = create<State>((set, get) => {
     openFile: async (file) => {
       const doc = await loadPdf(file.data);
       const id = `doc-${++idSeq}`;
+      const saved = loadDocPosition(file.path);
       const docState: DocState = {
         id,
         doc,
         path: file.path,
         name: file.name,
         numPages: doc.numPages,
-        pageNum: 1,
-        scale: DEFAULT_SCALE,
-        fitMode: "custom",
-        rotation: 0,
+        pageNum: saved?.pageNum ?? 1,
+        scale: saved?.scale ?? DEFAULT_SCALE,
+        fitMode: saved?.fitMode ?? "custom",
+        scrollMode: saved?.scrollMode ?? "paged",
+        rotation: saved?.rotation ?? 0,
         outline: [],
         bookmarks: loadDocBookmarks(file.path),
       };
@@ -234,6 +272,16 @@ export const useViewer = create<State>((set, get) => {
     closeDoc: (id) =>
       set((s) => {
         const docs = s.docs.filter((d) => d.id !== id);
+        const closed = s.docs.find((d) => d.id === id);
+        if (closed?.path) {
+          savePosition(closed.path, {
+            pageNum: closed.pageNum,
+            scale: closed.scale,
+            fitMode: closed.fitMode,
+            scrollMode: closed.scrollMode,
+            rotation: closed.rotation,
+          });
+        }
         let activeId = s.activeId;
         if (s.activeId === id) {
           const idx = s.docs.findIndex((d) => d.id === id);
@@ -287,6 +335,7 @@ export const useViewer = create<State>((set, get) => {
     setScale: (s) => patchActive({ scale: clampScale(s), fitMode: "custom" }),
     setFitScale: (s) => patchActive({ scale: clampScale(s) }),
     setFitMode: (m) => patchActive({ fitMode: m }),
+    setScrollMode: (m) => patchActive({ scrollMode: m }),
     rotateCW: () => {
       const a = active();
       if (a) patchActive({ rotation: (a.rotation + 90) % 360 });

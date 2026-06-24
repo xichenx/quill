@@ -12,6 +12,8 @@ import {
   Maximize2,
   RotateCw,
   Bookmark,
+  Columns,
+  Rows,
 } from "lucide-react";
 import { useViewer, useActiveDoc } from "../store/viewer";
 
@@ -59,6 +61,7 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
     zoomIn,
     zoomOut,
     setFitMode,
+    setScrollMode,
     rotateCW,
     toggleSidebar,
     toggleBookmark,
@@ -69,6 +72,7 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
   const numPages = active?.numPages ?? 0;
   const scale = active?.scale ?? 1;
   const fitMode = active?.fitMode ?? "custom";
+  const scrollMode = active?.scrollMode ?? "paged";
   const bookmarked = !!active?.bookmarks.some((b) => b.page === pageNum);
 
   const [pageInput, setPageInput] = useState(String(pageNum));
@@ -181,6 +185,26 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
           active={fitMode === "page"}
         >
           <Maximize2 size={13} />
+        </IconButton>
+
+        <div className="mx-0.5 h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+
+        {/* Scroll mode */}
+        <IconButton
+          title={scrollMode === "continuous" ? "逐页模式" : "连续滚动"}
+          onClick={() =>
+            setScrollMode(
+              scrollMode === "continuous" ? "paged" : "continuous",
+            )
+          }
+          disabled={!doc}
+          active={scrollMode === "continuous"}
+        >
+          {scrollMode === "continuous" ? (
+            <Rows size={13} />
+          ) : (
+            <Columns size={13} />
+          )}
         </IconButton>
 
         <div className="mx-0.5 h-3 w-px bg-zinc-200 dark:bg-zinc-700" />

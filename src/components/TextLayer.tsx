@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PdfDocument } from "../lib/pdf";
 
 interface TextItem {
@@ -14,6 +14,8 @@ interface PlacedSpan {
   top: number;
   fontSize: number;
   text: string;
+  width: number;
+  height: number;
 }
 
 export default function TextLayer({
@@ -30,6 +32,7 @@ export default function TextLayer({
   height: number;
 }) {
   const [spans, setSpans] = useState<PlacedSpan[]>([]);
+  const layerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,26 +48,38 @@ export default function TextLayer({
           if (cancelled) return;
           const it = raw as TextItem;
           if (!it.transform) continue;
-          // Transform from PDF coordinates to viewport coordinates.
-          // pdfjs transform: [a, b, c, d, e, f]
-          // viewport transform: [sx, 0, 0, sy, tx, ty]  (for rotation=0)
+          // pdfjs text item uses its own transform matrix relative to the page.
+          // viewport.transform converts page coords → screen coords.
+          // To get the final position, we apply viewport.transform to the
+          // item's translation (e, f).
           const tx = viewport.transform;
-          // Apply viewport transform to the item's own transform
-          const b = tx[1] * it.transform[0] + tx[3] * it.transform[1];
-          const d = tx[1] * it.transform[2] + tx[3] * it.transform[3];
-          const e = tx[0] * it.transform[4] + tx[2] * it.transform[5] + tx[4];
-          const f = tx[1] * it.transform[4] + tx[3] * it.transform[5] + tx[5];
+          // Combine: T_viewport * T_item for the translation part
+          const left = tx[0] * it.transform[4] + tx[2] * it.transform[5] + tx[4];
+          const top = tx[1] * it.transform[4] + tx[3] * it.transform[5] + tx[5];
 
+          // Font size from the scale of the item's matrix after viewport transform
+          const b = tx[0] * it.transform[1] + tx[2] * it.transform[3];
+          const d = tx[1] * it.transform[1] + tx[3] * it.transform[3];
           const fontSize = Math.hypot(b, d);
-          // Text starts at bottom-left, need to shift up by font height
-          const left = e;
-          const top = f - fontSize;
+
+          // Text baseline is at (left, top); shift up by font size to get
+          // the top of the bounding box (PDF Y axis points up, screen Y points down)
+          const textTop = top - fontSize;
+
+          // Approximate width from the item's own width field, scaled
+          const a = tx[0] * it.transform[0] + tx[2] * it.transform[2];
+          const c = tx[1] * it.transform[0] + tx[3] * it.transform[2];
+          const scaleX = Math.hypot(a, c);
+          const textWidth = (it.width || 0) * scaleX;
+          const textHeight = fontSize;
 
           placed.push({
             left,
-            top,
+            top: textTop,
             fontSize,
             text: it.str ?? "",
+            width: textWidth,
+            height: textHeight,
           });
         }
 
@@ -78,26 +93,50 @@ export default function TextLayer({
     };
   }, [doc, pageNumber, scale, rotation]);
 
+  // Handle Ctrl+C to copy selected text
+  useEffect(() => {
+    const el = layerRef.current;
+    if (!el) return;
+
+    const onCopy = (e: ClipboardEvent) => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      // Only intercept if the selection is within this text layer
+      if (!el.contains(sel.anchorNode)) return;
+
+      const text = sel.toString().trim();
+      if (!text) return;
+
+      e.preventDefault();
+      e.clipboardData?.setData("text/plain", text);
+    };
+
+    el.addEventListener("copy", onCopy);
+    return () => el.removeEventListener("copy", onCopy);
+  }, [pageNumber]);
+
   return (
     <div
-      className="absolute inset-0 overflow-hidden"
+      ref={layerRef}
+      className="absolute inset-0 overflow-hidden select-text"
       style={{
-        // Make text color fully transparent so canvas shows through,
-        // but selection background remains visible.
         color: "transparent",
-        userSelect: "text",
         cursor: "text",
+        pointerEvents: "auto",
+        lineHeight: 1,
       }}
     >
       {spans.map((s, i) => (
         <span
           key={i}
-          className="absolute whitespace-pre leading-none"
+          className="absolute whitespace-pre leading-none select-text"
           style={{
             left: s.left,
             top: s.top,
             fontSize: s.fontSize,
             fontFamily: "sans-serif",
+            width: s.width || undefined,
+            height: s.height || undefined,
           }}
         >
           {s.text}

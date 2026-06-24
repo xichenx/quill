@@ -17,6 +17,7 @@ function PageView({
   caseSensitive,
   activeOrdinal,
   registerRef,
+  continuous,
 }: {
   doc: PdfDocument;
   pageNumber: number;
@@ -26,6 +27,7 @@ function PageView({
   caseSensitive: boolean;
   activeOrdinal: number | null;
   registerRef: (page: number, el: HTMLElement | null) => void;
+  continuous?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,11 +80,22 @@ function PageView({
     };
   }, [doc, pageNumber, query, caseSensitive, scale, rotation]);
 
+  const pageNumEl = continuous ? null : (
+    <span className="py-2 text-xs font-semibold tabular-nums text-zinc-400 dark:text-zinc-500">
+      {pageNumber}
+    </span>
+  );
+
   return (
     <div className="flex flex-col items-center">
       <div
         ref={wrapRef}
-        className="page-wrapper animate-scale-in relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.12)] ring-1 ring-zinc-900/[0.05] transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06),0_24px_48px_-16px_rgba(0,0,0,0.16)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2),0_16px_40px_-16px_rgba(0,0,0,0.4)] dark:ring-white/[0.06] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3),0_24px_48px_-16px_rgba(0,0,0,0.5)]"
+        className={
+          "page-wrapper animate-scale-in relative overflow-hidden bg-white " +
+          (continuous
+            ? "ring-1 ring-zinc-900/[0.05] dark:ring-white/[0.06]"
+            : "rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.12)] ring-1 ring-zinc-900/[0.05] transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06),0_24px_48px_-16px_rgba(0,0,0,0.16)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2),0_16px_40px_-16px_rgba(0,0,0,0.4)] dark:ring-white/[0.06] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3),0_24px_48px_-16px_rgba(0,0,0,0.5)]")
+        }
         style={size ? { width: size.w, height: size.h } : { minHeight: 200 }}
       >
         <canvas ref={canvasRef} className="block" />
@@ -116,9 +129,7 @@ function PageView({
           )),
         )}
       </div>
-      <span className="py-2 text-xs font-semibold tabular-nums text-zinc-400 dark:text-zinc-500">
-        {pageNumber}
-      </span>
+      {pageNumEl}
     </div>
   );
 }

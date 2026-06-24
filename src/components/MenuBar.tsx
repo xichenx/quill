@@ -175,6 +175,8 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
         { label: "适应宽度", disabled: !hasDocs, onClick: () => store.getState().setFitMode("width") },
         { label: "适应页面", disabled: !hasDocs, onClick: () => store.getState().setFitMode("page") },
         { separator: true },
+        { label: "连续滚动", disabled: !hasDocs, onClick: () => { const s = store.getState(); const a = s.docs.find((d) => d.id === s.activeId); s.setScrollMode(a?.scrollMode === "continuous" ? "paged" : "continuous"); } },
+        { separator: true },
         { label: "旋转 90°", disabled: !hasDocs, onClick: () => store.getState().rotateCW() },
         { separator: true },
         { label: "切换主题", onClick: () => store.getState().toggleTheme() },

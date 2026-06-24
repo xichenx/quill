@@ -28,6 +28,7 @@ export default function Viewer() {
 
   const docId = active?.id ?? null;
   const fitMode = active?.fitMode ?? "custom";
+  const scrollMode = active?.scrollMode ?? "paged";
   const scale = active?.scale ?? 1;
   const rotation = active?.rotation ?? 0;
 
@@ -192,11 +193,16 @@ export default function Viewer() {
 
   const activeResult = searchResults[searchActive];
 
+  const isContinuous = scrollMode === "continuous";
+
   return (
     <div
       ref={containerRef}
       onScroll={onScroll}
-      className="viewer-area flex flex-1 flex-col items-center gap-6 overflow-auto bg-surface-alt px-8 py-10 dark:bg-surface-dark-alt"
+      className={
+        "viewer-area flex flex-1 flex-col items-center overflow-auto bg-surface-alt px-8 py-10 dark:bg-surface-dark-alt " +
+        (isContinuous ? "gap-0" : "gap-6")
+      }
     >
       {Array.from({ length: active.numPages }, (_, i) => i + 1).map((p) => (
         <PageView
@@ -213,6 +219,7 @@ export default function Viewer() {
               : null
           }
           registerRef={registerRef}
+          continuous={isContinuous}
         />
       ))}
     </div>
