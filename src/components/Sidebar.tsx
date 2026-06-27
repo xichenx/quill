@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Images, List, Bookmark as BookmarkIcon, X } from "lucide-react";
+import { Images, List, Bookmark as BookmarkIcon, X, Pencil } from "lucide-react";
 import { useViewer, useActiveDoc, type SidebarTab } from "../store/viewer";
 import { renderThumbnail, type PdfDocument, type OutlineNode } from "../lib/pdf";
 
@@ -150,9 +150,106 @@ function TabButton({
   );
 }
 
+function BookmarkItem({
+  page,
+  label,
+  active,
+  onGo,
+  onRemove,
+  onRename,
+}: {
+  page: number;
+  label: string;
+  active: boolean;
+  onGo: () => void;
+  onRemove: () => void;
+  onRename: (label: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(label);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const commit = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== label) {
+      onRename(trimmed);
+    } else {
+      setEditValue(label);
+    }
+    setEditing(false);
+  };
+
+  return (
+    <div
+      className="group flex items-center gap-1 rounded-lg pr-1 transition-colors hover:bg-surface-hover dark:hover:bg-surface-dark-hover"
+    >
+      <button
+        onClick={onGo}
+        className={
+          "flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left text-sm font-medium transition-colors " +
+          (active
+            ? "text-accent-600 dark:text-accent-400"
+            : "text-zinc-600 dark:text-zinc-300")
+        }
+      >
+        <BookmarkIcon size={14} className="shrink-0" />
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+              if (e.key === "Escape") {
+                setEditValue(label);
+                setEditing(false);
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full rounded border-0 bg-transparent py-0 text-sm font-medium text-zinc-700 outline-none ring-1 ring-accent-400 dark:text-zinc-200 dark:ring-accent-500"
+          />
+        ) : (
+          <span
+            className="truncate cursor-text"
+            onDoubleClick={() => setEditing(true)}
+            title="双击重命名"
+          >
+            {label}
+          </span>
+        )}
+      </button>
+      <button
+        title="重命名书签"
+        onClick={() => {
+          setEditValue(label);
+          setEditing(true);
+        }}
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-zinc-200 group-hover:opacity-100 dark:hover:bg-zinc-700"
+      >
+        <Pencil size={12} />
+      </button>
+      <button
+        title="删除书签"
+        onClick={onRemove}
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-zinc-200 group-hover:opacity-100 dark:hover:bg-zinc-700"
+      >
+        <X size={13} />
+      </button>
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const active = useActiveDoc();
-  const { sidebarOpen, sidebarTab, goToPage, setSidebarTab, removeBookmark } =
+  const { sidebarOpen, sidebarTab, goToPage, setSidebarTab, removeBookmark, renameBookmark } =
     useViewer();
 
   if (!sidebarOpen) return null;
@@ -228,30 +325,15 @@ export default function Sidebar() {
           <div className="space-y-0.5 py-1">
             {active.bookmarks.length ? (
               active.bookmarks.map((b) => (
-                <div
+                <BookmarkItem
                   key={b.page}
-                  className="group flex items-center gap-1 rounded-lg pr-1 transition-colors hover:bg-surface-hover dark:hover:bg-surface-dark-hover"
-                >
-                  <button
-                    onClick={() => goToPage(b.page)}
-                    className={
-                      "flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left text-sm font-medium transition-colors " +
-                      (b.page === active.pageNum
-                        ? "text-accent-600 dark:text-accent-400"
-                        : "text-zinc-600 dark:text-zinc-300")
-                    }
-                  >
-                    <BookmarkIcon size={14} className="shrink-0" />
-                    <span className="truncate">{b.label}</span>
-                  </button>
-                  <button
-                    title="删除书签"
-                    onClick={() => removeBookmark(b.page)}
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-zinc-200 group-hover:opacity-100 dark:hover:bg-zinc-700"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
+                  page={b.page}
+                  label={b.label}
+                  active={b.page === active.pageNum}
+                  onGo={() => goToPage(b.page)}
+                  onRemove={() => removeBookmark(b.page)}
+                  onRename={(label) => renameBookmark(b.page, label)}
+                />
               ))
             ) : (
               <div className="flex flex-col items-center gap-2 px-3 py-12">

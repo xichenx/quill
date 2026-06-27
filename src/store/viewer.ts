@@ -97,6 +97,7 @@ interface State {
   setSidebarTab: (t: SidebarTab) => void;
   toggleBookmark: () => void;
   removeBookmark: (page: number) => void;
+  renameBookmark: (page: number, label: string) => void;
 
   openSearch: () => void;
   closeSearch: () => void;
@@ -359,6 +360,15 @@ export const useViewer = create<State>((set, get) => {
       const a = active();
       if (!a) return;
       const bookmarks = a.bookmarks.filter((b) => b.page !== page);
+      patchActive({ bookmarks });
+      persistDocBookmarks(a.path, bookmarks);
+    },
+    renameBookmark: (page, label) => {
+      const a = active();
+      if (!a) return;
+      const bookmarks = a.bookmarks.map((b) =>
+        b.page === page ? { ...b, label } : b,
+      );
       patchActive({ bookmarks });
       persistDocBookmarks(a.path, bookmarks);
     },
