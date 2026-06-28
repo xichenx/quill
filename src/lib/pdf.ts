@@ -191,6 +191,35 @@ export async function getPageMatchBoxes(
   return result;
 }
 
+/** Export a single page as PNG/JPEG Blob */
+export async function exportPageImage(
+  doc: PdfDocument,
+  pageNumber: number,
+  scale: number,
+  rotation: number,
+  format: "png" | "jpeg" = "png",
+): Promise<Blob> {
+  const page = await doc.getPage(pageNumber);
+  const viewport = page.getViewport({ scale, rotation });
+  const dpr = window.devicePixelRatio || 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.floor(viewport.width * dpr);
+  canvas.height = Math.floor(viewport.height * dpr);
+  canvas.style.width = `${Math.floor(viewport.width)}px`;
+  canvas.style.height = `${Math.floor(viewport.height)}px`;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 上下文不可用");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("导出失败"))),
+      format === "jpeg" ? "image/jpeg" : "image/png",
+      0.95,
+    );
+  });
+}
+
 export async function renderThumbnail(
   doc: PdfDocument,
   pageNumber: number,

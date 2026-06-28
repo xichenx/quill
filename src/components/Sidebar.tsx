@@ -151,14 +151,13 @@ function TabButton({
 }
 
 function BookmarkItem({
-  page,
   label,
   active,
   onGo,
   onRemove,
   onRename,
 }: {
-  page: number;
+  page?: number;
   label: string;
   active: boolean;
   onGo: () => void;

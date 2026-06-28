@@ -14,6 +14,7 @@ import {
   Bookmark,
   Columns,
   Rows,
+  ImageDown,
 } from "lucide-react";
 import { useViewer, useActiveDoc } from "../store/viewer";
 
@@ -65,6 +66,7 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
     rotateCW,
     toggleSidebar,
     toggleBookmark,
+    exportCurrentPage,
   } = useViewer();
 
   const doc = !!active;
@@ -220,6 +222,13 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
           active={bookmarked}
         >
           <Bookmark size={13} />
+        </IconButton>
+        <IconButton
+          title="导出当前页为图片"
+          onClick={() => exportCurrentPage("png")}
+          disabled={!doc}
+        >
+          <ImageDown size={13} />
         </IconButton>
       </div>
     </div>

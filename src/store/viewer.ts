@@ -6,7 +6,7 @@ import {
   type OutlineNode,
   type SearchMatch,
 } from "../lib/pdf";
-import { loadPdf } from "../lib/pdf";
+import { loadPdf, exportPageImage } from "../lib/pdf";
 import { type OpenedFile } from "../lib/files";
 
 const MIN_SCALE = 0.25;
@@ -108,6 +108,9 @@ interface State {
   nextMatch: () => void;
   prevMatch: () => void;
 
+  exportCurrentPage: (format?: "png" | "jpeg") => Promise<void>;
+  exportAllPages: (format?: "png" | "jpeg") => Promise<void>;
+
   toggleTheme: () => void;
 }
 
@@ -192,6 +195,17 @@ function persistDocBookmarks(path: string | null, bookmarks: Bookmark[]) {
 }
 
 let idSeq = 0;
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export const useViewer = create<State>((set, get) => {
   // Mutate the active doc and trigger a re-render.
@@ -413,6 +427,35 @@ export const useViewer = create<State>((set, get) => {
       get().gotoResult(
         (searchActive - 1 + searchResults.length) % searchResults.length,
       );
+    },
+
+    exportCurrentPage: async (format = "png") => {
+      const a = active();
+      if (!a) return;
+      try {
+        const blob = await exportPageImage(a.doc, a.pageNum, a.scale, a.rotation, format);
+        downloadBlob(blob, `${a.name.replace(/\.pdf$/i, "")}_p${a.pageNum}.${format}`);
+      } catch (e) {
+        console.error("导出当前页失败:", e);
+      }
+    },
+    exportAllPages: async (format = "png") => {
+      const a = active();
+      if (!a) return;
+      try {
+        const blobs: Blob[] = [];
+        for (let p = 1; p <= a.numPages; p++) {
+          blobs.push(await exportPageImage(a.doc, p, a.scale, a.rotation, format));
+        }
+        // For multiple pages, download as individual files with a small delay
+        for (let i = 0; i < blobs.length; i++) {
+          setTimeout(() => {
+            downloadBlob(blobs[i], `${a.name.replace(/\.pdf$/i, "")}_p${i + 1}.${format}`);
+          }, i * 200);
+        }
+      } catch (e) {
+        console.error("导出全部页面失败:", e);
+      }
     },
 
     toggleTheme: () =>
