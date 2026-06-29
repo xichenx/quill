@@ -188,6 +188,8 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
         { label: "旋转 90°", disabled: !hasDocs, onClick: () => store.getState().rotateCW() },
         { separator: true },
         { label: "切换主题", onClick: () => store.getState().toggleTheme() },
+        { separator: true },
+        { label: "演示模式", shortcut: "F5", disabled: !hasDocs, onClick: () => { const s = store.getState(); s.presentationMode ? s.exitPresentation() : s.enterPresentation(); } },
         { label: "全屏", shortcut: "F11", onClick: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() },
       ],
     },
@@ -205,7 +207,7 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
     {
       label: "帮助",
       items: [
-        { label: "键盘快捷键", onClick: () => alert("键盘快捷键:\n\nCtrl+O — 打开文件\nCtrl+W — 关闭文档\nCtrl+F — 查找\nCtrl+P — 打印\nCtrl+B — 切换侧栏\nCtrl+= / + — 放大\nCtrl+- — 缩小\nCtrl+G — 跳转到页\nF11 — 全屏\n← → — 上下翻页\nEsc — 关闭搜索") },
+        { label: "键盘快捷键", onClick: () => alert("键盘快捷键:\n\nCtrl+O — 打开文件\nCtrl+W — 关闭文档\nCtrl+F — 查找\nCtrl+P — 打印\nCtrl+B — 切换侧栏\nCtrl+= / + — 放大\nCtrl+- — 缩小\nCtrl+G — 跳转到页\nF5 — 演示模式\nF11 — 全屏\n← → — 上下翻页\nEsc — 关闭搜索 / 退出演示") },
         { separator: true },
         { label: "关于 Quill", onClick: () => alert("Quill PDF 阅读器\n\n基于 Tauri + React + pdfjs\n轻量、快速、美观") },
       ],

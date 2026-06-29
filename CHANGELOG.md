@@ -10,6 +10,7 @@
 - Text selection and copy — select text on PDF pages and copy with Ctrl+C
 - Editable bookmarks — double-click bookmark labels to rename them
 - Export pages as images — save current page or all pages as PNG/JPEG
+- Presentation mode — distraction-free full-content reading with auto-hiding floating toolbar (F5)
 
 ## [0.1.0] - unreleased
 

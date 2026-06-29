@@ -111,6 +111,10 @@ interface State {
   exportCurrentPage: (format?: "png" | "jpeg") => Promise<void>;
   exportAllPages: (format?: "png" | "jpeg") => Promise<void>;
 
+  presentationMode: boolean;
+  enterPresentation: () => void;
+  exitPresentation: () => void;
+
   toggleTheme: () => void;
 }
 
@@ -238,6 +242,8 @@ export const useViewer = create<State>((set, get) => {
     searchResults: [],
     searchLoading: false,
     searchActive: -1,
+
+    presentationMode: false,
 
     openFile: async (file) => {
       const doc = await loadPdf(file.data);
@@ -457,6 +463,9 @@ export const useViewer = create<State>((set, get) => {
         console.error("导出全部页面失败:", e);
       }
     },
+
+    enterPresentation: () => set({ presentationMode: true, sidebarOpen: false, searchOpen: false }),
+    exitPresentation: () => set({ presentationMode: false }),
 
     toggleTheme: () =>
       set((s) => {

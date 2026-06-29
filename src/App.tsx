@@ -10,11 +10,13 @@ import Viewer from "./components/Viewer";
 import Home from "./components/Home";
 import SearchPanel from "./components/SearchPanel";
 import StatusBar from "./components/StatusBar";
+import PresentationBar from "./components/PresentationBar";
 
 function App() {
   const {
     docs,
     theme,
+    presentationMode,
     openFile,
     removeRecent,
     nextPage,
@@ -24,6 +26,7 @@ function App() {
     openSearch,
     closeSearch,
     toggleBookmark,
+    exitPresentation,
     nextMatch,
     prevMatch,
   } = useViewer();
@@ -82,7 +85,19 @@ function App() {
         return;
       }
       if (e.key === "Escape") {
-        closeSearch();
+        if (useViewer.getState().presentationMode) {
+          exitPresentation();
+        } else {
+          closeSearch();
+        }
+        return;
+      }
+      if (e.key === "F5") {
+        e.preventDefault();
+        const s = useViewer.getState();
+        if (s.docs.length > 0) {
+          s.presentationMode ? s.exitPresentation() : s.enterPresentation();
+        }
         return;
       }
       if (e.key === "F11") {
@@ -144,18 +159,25 @@ function App() {
       }}
     >
       {/* Menu bar row */}
-      <MenuBar onOpen={openViaDialog} onOpenRecent={openRecent} />
+      {!presentationMode && <MenuBar onOpen={openViaDialog} onOpenRecent={openRecent} />}
       {hasDocs ? (
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex min-h-0 flex-1">
-            <Sidebar />
-            <div className="flex min-h-0 flex-1 flex-col">
-              <TabBar onOpen={openViaDialog} />
-              <Viewer />
-            </div>
-            <SearchPanel />
+        presentationMode ? (
+          <div className="flex min-h-0 flex-1 flex-col bg-zinc-950">
+            <Viewer />
+            <PresentationBar />
           </div>
-        </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1">
+              <Sidebar />
+              <div className="flex min-h-0 flex-1 flex-col">
+                <TabBar onOpen={openViaDialog} />
+                <Viewer />
+              </div>
+              <SearchPanel />
+            </div>
+          </div>
+        )
       ) : (
         <div className="flex min-h-0 flex-1">
           <Home
@@ -166,7 +188,7 @@ function App() {
         </div>
       )}
 
-      <StatusBar />
+      {!presentationMode && <StatusBar />}
       <ToastContainer />
     </div>
   );
