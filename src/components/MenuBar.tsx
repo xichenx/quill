@@ -112,7 +112,7 @@ function MenuDropdown({ menu, onClose, anchorRef }: { menu: Menu; onClose: () =>
   return createPortal(dropdown, document.body);
 }
 
-export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; onOpenRecent: (path: string) => void }) {
+export default function MenuBar({ onOpen, onOpenRecent, onShowDocInfo, onCommandPalette }: { onOpen: () => void; onOpenRecent: (path: string) => void; onShowDocInfo: () => void; onCommandPalette: () => void }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const menuAnchorRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -150,6 +150,8 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
         { separator: true },
         { label: "关闭文档", shortcut: "Ctrl+W", disabled: !hasActive, onClick: () => { const s = store.getState(); if (s.activeId) s.closeDoc(s.activeId); } },
         { label: "关闭所有", disabled: !hasDocs, onClick: () => { const s = store.getState(); [...s.docs].forEach((d) => s.closeDoc(d.id)); } },
+        { separator: true },
+        { label: "文档属性", shortcut: "Ctrl+I", disabled: !hasActive, onClick: onShowDocInfo },
         { separator: true },
         { label: "打印...", shortcut: "Ctrl+P", disabled: !hasDocs, onClick: () => window.print() },
         { separator: true },
@@ -207,7 +209,9 @@ export default function MenuBar({ onOpen, onOpenRecent }: { onOpen: () => void; 
     {
       label: "帮助",
       items: [
-        { label: "键盘快捷键", onClick: () => alert("键盘快捷键:\n\nCtrl+O — 打开文件\nCtrl+W — 关闭文档\nCtrl+F — 查找\nCtrl+P — 打印\nCtrl+B — 切换侧栏\nCtrl+= / + — 放大\nCtrl+- — 缩小\nCtrl+G — 跳转到页\nF5 — 演示模式\nF11 — 全屏\n← → — 上下翻页\nEsc — 关闭搜索 / 退出演示") },
+        { label: "命令面板...", shortcut: "Ctrl+K", onClick: onCommandPalette },
+        { separator: true },
+        { label: "键盘快捷键", onClick: () => alert("键盘快捷键:\n\nCtrl+O — 打开文件\nCtrl+W — 关闭文档\nCtrl+F — 查找\nCtrl+P — 打印\nCtrl+B — 切换侧栏\nCtrl+= / + — 放大\nCtrl+- — 缩小\nCtrl+G — 跳转到页\nCtrl+K — 命令面板\nCtrl+I — 文档属性\nF5 — 演示模式\nF11 — 全屏\n← → — 上下翻页\nEsc — 关闭搜索 / 退出演示") },
         { separator: true },
         { label: "关于 Quill", onClick: () => alert("Quill PDF 阅读器\n\n基于 Tauri + React + pdfjs\n轻量、快速、美观") },
       ],

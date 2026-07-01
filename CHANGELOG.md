@@ -11,6 +11,8 @@
 - Editable bookmarks — double-click bookmark labels to rename them
 - Export pages as images — save current page or all pages as PNG/JPEG
 - Presentation mode — distraction-free full-content reading with auto-hiding floating toolbar (F5)
+- Document properties panel — view PDF metadata (title, author, page size, etc.) via Ctrl+I or clicking the tab name
+- Command palette — quick search and execute any action via Ctrl+K, with fuzzy filtering and keyboard navigation
 
 ## [0.1.0] - unreleased
 

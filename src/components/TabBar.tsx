@@ -49,7 +49,7 @@ function IconButton({
   );
 }
 
-export default function TabBar({ onOpen }: { onOpen: () => void }) {
+export default function TabBar({ onOpen, onShowDocInfo }: { onOpen: () => void; onShowDocInfo: () => void }) {
   const store = useViewer;
   const docs = useViewer((s) => s.docs);
   const activeId = useViewer((s) => s.activeId);
@@ -104,7 +104,13 @@ export default function TabBar({ onOpen }: { onOpen: () => void }) {
               }
             >
               <FileText size={12} className="shrink-0 opacity-50" />
-              <span className="flex-1 truncate max-w-[120px]">{d.name}</span>
+              <span
+                className="flex-1 truncate max-w-[120px]"
+                title={active ? "点击查看文档属性" : undefined}
+                onClick={active ? (e) => { e.stopPropagation(); onShowDocInfo(); } : undefined}
+              >
+                {d.name}
+              </span>
               <span
                 onClick={(e) => {
                   e.stopPropagation();

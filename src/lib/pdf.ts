@@ -9,6 +9,63 @@ export async function loadPdf(data: ArrayBuffer): Promise<PdfDocument> {
   return pdfjsLib.getDocument({ data }).promise;
 }
 
+export interface PdfMeta {
+  title: string;
+  author: string;
+  subject: string;
+  keywords: string;
+  creator: string;
+  producer: string;
+  creationDate: string;
+  modificationDate: string;
+  pdfVersion: string;
+  pageCount: number;
+  isLinearized: boolean;
+  isEncrypted: boolean;
+  fileSize: number;
+  pageSize: string;
+}
+
+function formatDate(raw: unknown): string {
+  if (!raw) return "—";
+  try {
+    const d = new Date(raw as string);
+    if (isNaN(d.getTime())) return String(raw);
+    return d.toLocaleString();
+  } catch {
+    return String(raw);
+  }
+}
+
+export async function getPdfMeta(
+  doc: PdfDocument,
+  data: ArrayBuffer,
+): Promise<PdfMeta> {
+  const md = await doc.getMetadata();
+  const info = (md.info ?? {}) as Record<string, unknown>;
+  const page = await doc.getPage(1);
+  const v = page.getViewport({ scale: 1 });
+  const w = (v.width / 72).toFixed(2);
+  const h = (v.height / 72).toFixed(2);
+
+  return {
+    title: String(info.Title ?? "—"),
+    author: String(info.Author ?? "—"),
+    subject: String(info.Subject ?? "—"),
+    keywords: String(info.Keywords ?? "—"),
+    creator: String(info.Creator ?? "—"),
+    producer: String(info.Producer ?? "—"),
+    creationDate: formatDate(info.CreationDate),
+    modificationDate: formatDate(info.ModDate),
+    pdfVersion: String(info.PDFFormatVersion ?? "—"),
+    pageCount: doc.numPages,
+    isLinearized: !!(info as any).IsLinearized,
+    isEncrypted: !!(info as any).IsAcroFormPresent, // best effort
+    fileSize: data.byteLength,
+    pageSize: `${w}" × ${h}" (${Math.round(v.width)} × ${Math.round(v.height)} pt)`,
+  };
+}
+
 export async function getPageBaseSize(
   doc: PdfDocument,
   pageNumber: number,

@@ -6,7 +6,8 @@ import {
   type OutlineNode,
   type SearchMatch,
 } from "../lib/pdf";
-import { loadPdf, exportPageImage } from "../lib/pdf";
+import { loadPdf, exportPageImage, getPdfMeta } from "../lib/pdf";
+import type { PdfMeta } from "../lib/pdf";
 import { type OpenedFile } from "../lib/files";
 
 const MIN_SCALE = 0.25;
@@ -48,6 +49,7 @@ export interface DocState {
   rotation: number;
   outline: OutlineNode[];
   bookmarks: Bookmark[];
+  meta: PdfMeta | null;
 }
 
 interface ScrollTarget {
@@ -262,6 +264,7 @@ export const useViewer = create<State>((set, get) => {
         rotation: saved?.rotation ?? 0,
         outline: [],
         bookmarks: loadDocBookmarks(file.path),
+        meta: null,
       };
       set((s) => {
         let recents = s.recents;
@@ -285,6 +288,13 @@ export const useViewer = create<State>((set, get) => {
         .then((outline) =>
           set((s) => ({
             docs: s.docs.map((d) => (d.id === id ? { ...d, outline } : d)),
+          })),
+        )
+        .catch(console.error);
+      getPdfMeta(doc, file.data)
+        .then((meta) =>
+          set((s) => ({
+            docs: s.docs.map((d) => (d.id === id ? { ...d, meta } : d)),
           })),
         )
         .catch(console.error);

@@ -11,6 +11,8 @@ import Home from "./components/Home";
 import SearchPanel from "./components/SearchPanel";
 import StatusBar from "./components/StatusBar";
 import PresentationBar from "./components/PresentationBar";
+import DocumentInfo from "./components/DocumentInfo";
+import CommandPalette from "./components/CommandPalette";
 
 function App() {
   const {
@@ -31,6 +33,8 @@ function App() {
     prevMatch,
   } = useViewer();
   const [dragging, setDragging] = useState(false);
+  const [docInfoOpen, setDocInfoOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   const openViaDialog = useCallback(async () => {
     try {
@@ -77,6 +81,16 @@ function App() {
       if (mod && e.key.toLowerCase() === "f") {
         e.preventDefault();
         openSearch();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        if (docs.length > 0) setDocInfoOpen(true);
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
         return;
       }
       if (mod && e.key.toLowerCase() === "p") {
@@ -159,7 +173,7 @@ function App() {
       }}
     >
       {/* Menu bar row */}
-      {!presentationMode && <MenuBar onOpen={openViaDialog} onOpenRecent={openRecent} />}
+      {!presentationMode && <MenuBar onOpen={openViaDialog} onOpenRecent={openRecent} onShowDocInfo={() => setDocInfoOpen(true)} onCommandPalette={() => setCommandPaletteOpen(true)} />}
       {hasDocs ? (
         presentationMode ? (
           <div className="flex min-h-0 flex-1 flex-col bg-zinc-950">
@@ -171,7 +185,7 @@ function App() {
             <div className="flex min-h-0 flex-1">
               <Sidebar />
               <div className="flex min-h-0 flex-1 flex-col">
-                <TabBar onOpen={openViaDialog} />
+                <TabBar onOpen={openViaDialog} onShowDocInfo={() => setDocInfoOpen(true)} />
                 <Viewer />
               </div>
               <SearchPanel />
@@ -189,6 +203,13 @@ function App() {
       )}
 
       {!presentationMode && <StatusBar />}
+      {docInfoOpen && <DocumentInfo onClose={() => setDocInfoOpen(false)} />}
+      {commandPaletteOpen && (
+        <CommandPalette
+          onClose={() => setCommandPaletteOpen(false)}
+          onShowDocInfo={() => setDocInfoOpen(true)}
+        />
+      )}
       <ToastContainer />
     </div>
   );
